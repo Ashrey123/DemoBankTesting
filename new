@@ -1,0 +1,86 @@
+import tkinter as tk
+from tkinter import filedialog
+import pandas as pd
+from sklearn.preprocessing import LabelEncoder, OneHotEncoder
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score
+
+
+def load_dataset():
+    file_path = filedialog.askopenfilename(filetypes=(("Excel files", "*.xlsx"), ("All files", "*.*")))
+    if file_path:
+        entry_dataset.delete(0, tk.END)
+        entry_dataset.insert(tk.END, file_path)
+
+
+def preprocess_dataset():
+    file_path = entry_dataset.get()
+    if file_path:
+        data = pd.read_excel(file_path)
+
+        # Preprocessing
+        label_encoder = LabelEncoder()
+        data['positive_feedback'] = label_encoder.fit_transform(data['positive_feedback'])
+
+        categorical_features = ['skills', 'reviews']
+        one_hot_encoder = OneHotEncoder(sparse=False, handle_unknown='ignore')
+        one_hot_encoded = one_hot_encoder.fit_transform(data[categorical_features])
+
+        # Create a DataFrame with the one-hot encoded features
+        encoded_df = pd.DataFrame(one_hot_encoded, columns=one_hot_encoder.get_feature_names(categorical_features))
+
+        # Concatenate the encoded features with the remaining numerical features
+        preprocessed_data = pd.concat([data.drop(categorical_features, axis=1), encoded_df], axis=1)
+
+        preprocessed_data.to_excel('preprocessed_dataset.xlsx', index=False)
+        label_status.config(text="Preprocessing completed. Preprocessed dataset saved as 'preprocessed_dataset.xlsx'.")
+    else:
+        label_status.config(text="Please select a dataset file.")
+
+
+def train_model():
+    preprocessed_file_path = 'preprocessed_dataset.xlsx'
+    if preprocessed_file_path:
+        preprocessed_data = pd.read_excel(preprocessed_file_path)
+
+        # Separate features and target variable
+        X = preprocessed_data.drop(['employeeid', 'employeename', 'positive_feedback'], axis=1)
+        y = preprocessed_data['positive_feedback']
+
+        # Split the data into training and testing sets
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+        # Create a logistic regression model
+        model = LogisticRegression()
+
+        # Train the model
+        model.fit(X_train, y_train)
+
+        # Make predictions on the test set
+        y_pred = model.predict(X_test)
+
+        # Evaluate the model
+        accuracy = accuracy_score(y_test, y_pred)
+        label_status.config(text="Model trained. Accuracy: {:.2f}".format(accuracy))
+    else:
+        label_status.config(text="Please preprocess the dataset first.")
+
+
+# Create the main window
+window = tk.Tk()
+window.title("ML Model Training")
+window.geometry("400x200")
+
+# Create widgets
+label_dataset = tk.Label(window, text="Select Dataset:")
+entry_dataset = tk.Entry(window, width=30)
+button_browse = tk.Button(window, text="Browse", command=load_dataset)
+button_preprocess = tk.Button(window, text="Preprocess", command=preprocess_dataset)
+button_train = tk.Button(window, text="Train Model", command=train_model)
+label_status = tk.Label(window, text="")
+
+# Grid layout for widgets
+label_dataset.grid(row=0, column=0, padx=10, pady=10, sticky=tk.W)
+entry_dataset.grid(row=0, column=1, padx=10, pady=10)
+button_browse.grid
