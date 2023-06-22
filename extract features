@@ -1,0 +1,27 @@
+
+import nltk
+from nltk.tokenize import word_tokenize
+from nltk.corpus import stopwords
+from nltk.stem import WordNetLemmatizer
+import string
+
+def extract_features(code_segment):
+    # Tokenization
+    tokens = word_tokenize(code_segment)
+
+    # Remove punctuation
+    tokens = [token for token in tokens if token not in string.punctuation]
+
+    # Remove stopwords
+    stop_words = set(stopwords.words('english'))
+    tokens = [token for token in tokens if token.lower() not in stop_words]
+
+    # Lemmatization
+    lemmatizer = WordNetLemmatizer()
+    tokens = [lemmatizer.lemmatize(token) for token in tokens]
+
+    # Extract features (example: word count)
+    word_count = len(tokens)
+
+    # Return the extracted features
+    return [word_count]
