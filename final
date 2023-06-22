@@ -1,0 +1,58 @@
+
+from flask import Flask, render_template, request
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score
+from sklearn.externals import joblib
+
+# Create a Flask app
+app = Flask(__name__)
+
+# Step 1: Prepare the dataset
+# Load your dataset where each sample represents a software component or code segment
+# The dataset should have features representing code properties and a label indicating vulnerability
+
+# Replace X and y with your actual dataset
+X, y = load_dataset()
+
+# Step 2: Feature Engineering (optional)
+# Perform feature engineering if necessary, such as extracting relevant features from the code
+# You can use techniques like tokenization, n-grams, or static code analysis tools
+
+# Step 3: Train the machine learning model
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+model = RandomForestClassifier(n_estimators=100, random_state=42)
+model.fit(X_train, y_train)
+
+# Step 4: Evaluate the model
+y_pred = model.predict(X_test)
+accuracy = accuracy_score(y_test, y_pred)
+print(f"Model Accuracy: {accuracy}")
+
+# Step 5: Save the model
+joblib.dump(model, 'model.pkl')
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/predict', methods=['POST'])
+def predict():
+    code_segment = request.form['code_segment']
+
+    # Preprocess and extract features from the code
+    # ...
+
+    # Load the saved model
+    model = joblib.load('model.pkl')
+
+    # Use the loaded model to predict vulnerabilities
+    features = extract_features(code_segment)
+    prediction = model.predict(features)
+
+    return render_template('index.html', prediction=prediction)
+
+if __name__ == '__main__':
+    app.run(debug=True)
