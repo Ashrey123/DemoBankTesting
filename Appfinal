@@ -1,0 +1,71 @@
+
+from flask import Flask, render_template, request
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score
+from sklearn.externals import joblib
+import pandas as pd
+
+# Create a Flask app
+app = Flask(__name__)
+
+def load_dataset():
+    # Load the dataset from a CSV file
+    dataset = pd.read_csv('dataset.csv')
+
+    # Split the dataset into features (X) and labels (y)
+    X = dataset.iloc[:, :-1]  # Extract all columns except the last one
+    y = dataset.iloc[:, -1]  # Extract the last column as labels
+
+    return X, y
+
+def extract_features(code_segment):
+    # Preprocess the code segment if necessary
+    # Extract relevant features from the code
+
+    # Return the extracted features
+    return extracted_features
+
+# Step 1: Prepare the dataset
+X, y = load_dataset()
+
+# Step 2: Feature Engineering (optional)
+# Perform feature engineering if necessary, such as extracting relevant features from the code
+# You can use techniques like tokenization, n-grams, or static code analysis tools
+
+# Step 3: Train the machine learning model
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+model = RandomForestClassifier(n_estimators=100, random_state=42)
+model.fit(X_train, y_train)
+
+# Step 4: Evaluate the model
+y_pred = model.predict(X_test)
+accuracy = accuracy_score(y_test, y_pred)
+print(f"Model Accuracy: {accuracy}")
+
+# Step 5: Save the model
+joblib.dump(model, 'model.pkl')
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/predict', methods=['POST'])
+def predict():
+    code_segment = request.form['code_segment']
+
+    # Preprocess and extract features from the code
+    features = extract_features(code_segment)
+
+    # Load the saved model
+    model = joblib.load('model.pkl')
+
+    # Use the loaded model to predict vulnerabilities
+    prediction = model.predict(features)
+
+    return render_template('index.html', prediction=prediction)
+
+if __name__ == '__main__':
+    app.run(debug=True)
