@@ -1,0 +1,20 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Code Vulnerability Prediction</title>
+  </head>
+  <body>
+    <h1>Code Vulnerability Prediction</h1>
+
+    <form action="/predict" method="post">
+      <textarea name="code_segment" rows="10" cols="50"></textarea>
+      <br>
+      <input type="submit" value="Predict">
+    </form>
+
+    {% if prediction %}
+      <h2>Prediction: {{ prediction }}</h2>
+    {% endif %}
+  </body>
+</html>
